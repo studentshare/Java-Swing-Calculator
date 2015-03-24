@@ -1,5 +1,6 @@
 /*
-Java Swing Calculator
+Java Swing Calculator 
+author studentshare.net
 */
  
 import java.awt.BorderLayout;
