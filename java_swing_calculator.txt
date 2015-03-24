@@ -1,0 +1,734 @@
+/*
+Java Swing Calculator
+*/
+ 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+ 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JOptionPane;
+ 
+public class Calculator extends JFrame implements ActionListener
+{
+    // Variables
+    final int MAX_INPUT_LENGTH = 20;
+    final int INPUT_MODE = 0;
+    final int RESULT_MODE = 1;
+    final int ERROR_MODE = 2;
+    int displayMode;
+ 
+    boolean clearOnNextDigit, percent;
+    double lastNumber;
+    String lastOperator;
+ 
+    private JMenu jmenuFile, jmenuEdit, jmenuView, jmenuHelp;
+    private JMenuItem jmenuitemExit, jmenuitemCopy, jmenuitemPaste, jmenuitemStd, 
+                                            jmenuitemSci, jmenuitemDigitGrp, jmenuitemAbout;
+    private JDialog dialog;
+ 
+    private JLabel display;
+    private JButton button[];
+    private JPanel masterPanel;
+	private JTextArea textarea;
+ 
+    Font f12 = new Font("Times New Roman", 0, 12);
+    Font f121 = new Font("Times New Roman", 1, 12);
+	Font f10 = new Font("Times New Roman", 0, 10);
+ 
+    // Constructor 
+    public Calculator() 
+    {
+ 
+        //Set Up the JMenuBar
+       /* jmenuFile = new JMenu("File");
+        jmenuFile.setFont(f121);*/
+ 
+  /*      jmenuitemExit = new JMenuItem("Exit");
+        jmenuitemExit.setFont(f12);
+        jmenuFile.add(jmenuitemExit);*/
+ 
+        jmenuEdit = new JMenu("Edit");
+        jmenuEdit.setFont(f121);
+ 
+        jmenuitemCopy = new JMenuItem("Copy");
+        jmenuitemCopy.setFont(f12);
+ 
+        jmenuitemPaste = new JMenuItem("Paste");
+        jmenuitemPaste.setFont(f12);
+        jmenuEdit.add(jmenuitemCopy);        
+        jmenuEdit.add(jmenuitemPaste);
+ 
+        jmenuView = new JMenu("View");
+        jmenuView.setFont(f121);
+ 
+        jmenuitemStd = new JMenuItem("Standard");
+        jmenuitemStd.setFont(f12);
+ 
+        jmenuitemSci = new JMenuItem("Scientific");
+        jmenuitemSci.setFont(f12);
+ 
+        jmenuitemDigitGrp = new JMenuItem("Digit Grouping");
+        jmenuitemDigitGrp.setFont(f12);
+        jmenuView.add(jmenuitemStd); 
+        jmenuView.add(jmenuitemSci); 
+        jmenuView.addSeparator(); 
+        jmenuView.add(jmenuitemDigitGrp);
+ 
+        jmenuHelp = new JMenu("Help");
+        jmenuHelp.setFont(f121);
+ 
+        jmenuitemAbout = new JMenuItem("About Calculator");
+        jmenuitemAbout.setFont(f12);
+        jmenuHelp.add(jmenuitemAbout);
+ 
+        JMenuBar mb = new JMenuBar();
+    //    mb.add(jmenuFile);
+        mb.add(jmenuEdit);
+        mb.add(jmenuView);
+        mb.add(jmenuHelp);
+        setJMenuBar(mb);
+ 
+        //Set frame layout manager
+ 
+        setBackground(Color.gray);
+ 
+        /*
+         * Font(String name, int style, int size)
+Creates a new Font from the specified name, style and point size.
+         */
+ 
+ 
+        //adds menubar to frame (end)
+ 
+        masterPanel = new JPanel();
+ 
+        display = new JLabel("0");
+        display.setAlignmentX(JLabel.RIGHT);
+        display.setBackground(Color.gray);
+ 
+        Container contentPane = getContentPane();
+ 
+
+        // Add components to frame
+        contentPane.add(display, BorderLayout.NORTH);
+ 
+        button = new JButton[23];
+		
+
+
+ 
+        JPanel backSpace = new JPanel();
+        backSpace.setLayout(new GridLayout(1, 1, 2, 2));
+ 
+        button[20] = new JButton("Backspace");
+        backSpace.add(button[20]);
+ 
+        JPanel control = new JPanel();
+        control.setLayout(new GridLayout(1, 2, 2 ,2));
+ 
+        button[21] = new JButton(" CE ");
+        button[22] = new JButton("C");
+ 
+        control.add(button[21]);
+        control.add(button[22]);
+ 
+        contentPane.setLayout(new BorderLayout());
+        setTitle("Calculator");
+        setSize(241, 217);
+        setLocation(400, 250);
+        setVisible(true);
+        setResizable(false);
+
+		
+        JPanel keyPad = new JPanel();            // container for buttons
+ 
+        // Create numeric buttons
+        for (int i=0; i<=9; i++)
+        {
+            // set each button label to the value of index
+            button[i] = new JButton(String.valueOf(i));
+        }
+ 
+        // Create operator buttons
+        button[10] = new JButton("+-");
+        button[11] = new JButton(".");
+        button[12] = new JButton("=");
+        button[13] = new JButton("/");
+        button[14] = new JButton("*");
+        button[15] = new JButton("-");
+        button[16] = new JButton("+");
+        button[17] = new JButton("rt");
+        button[18] = new JButton("1/x");
+        button[19] = new JButton("%");
+ 
+        for (int i=0; i<button.length; i++)
+        {
+            button[i].setFont(f10);
+ 
+            if (i<13)
+                button[i].setForeground(Color.blue);
+ 
+            else
+                button[i].setForeground(Color.red);
+        }
+ 
+        // Set panel layout manager for a 4 by 5 grid
+        keyPad.setLayout(new GridLayout(4, 5, 2, 2));
+
+ 
+        //Add buttons to keypad panel starting at top left
+        // First row
+        for(int i=7; i<=9; i++)
+        {
+            //adds buttons 7,8,9 and /
+            keyPad.add(button[i]);
+        }
+ 
+        // add button / and sqrt
+        keyPad.add(button[13]);
+        keyPad.add(button[17]);
+ 
+        // Second row
+        for(int i=4; i<=6; i++)
+        {
+            //adds buttons 4,5,6
+            keyPad.add(button[i]);
+        }
+ 
+        // add button * and x^2
+        keyPad.add(button[14]);
+        keyPad.add(button[18]);
+ 
+        // Third row
+        for( int i=1; i<=3; i++)
+        {
+            // add buttons 1,2,3
+            keyPad.add(button[i]);
+        }
+ 
+        //adds button - and %
+        keyPad.add(button[15]);
+        keyPad.add(button[19]);
+ 
+        //Fourth Row
+        // add 0, +/-, ., +, and =
+        keyPad.add(button[0]);
+        keyPad.add(button[10]);
+        keyPad.add(button[11]);
+        keyPad.add(button[16]);
+        keyPad.add(button[12]);
+
+ 
+        masterPanel.setLayout(new BorderLayout());
+        masterPanel.add(backSpace, BorderLayout.WEST);
+        masterPanel.add(control, BorderLayout.EAST);
+        masterPanel.add(keyPad, BorderLayout.SOUTH);
+ 
+        // Add components to frame
+        contentPane.add(masterPanel, BorderLayout.SOUTH);
+        requestFocus();
+ 
+        //activate ActionListener
+        for (int i=0; i<button.length; i++)
+        {
+            button[i].addActionListener(this);
+        }
+ 
+        jmenuitemAbout.addActionListener(this);
+//        jmenuitemExit.addActionListener(this);
+ 
+        clearAll();
+ 
+        //add WindowListener for closing frame and ending program
+        addWindowListener(new WindowAdapter() 
+            {
+                public void windowClosing(WindowEvent e)
+                {
+                    Window theWindow = e.getWindow();
+                    theWindow.dispose();
+                }
+ 
+                public void windowClosed(WindowEvent e)
+                {
+                    System.exit(0);
+                }
+            }
+       );
+    }
+ 
+    // Perform action
+    public void actionPerformed(ActionEvent e)
+    {
+        double result = 0;
+ 
+        if(e.getSource() == jmenuitemAbout)
+        {
+            System.out.println("Starting About Calculator window...");
+            JDialog dlg = new CustomDialog(this, "About Calculator", true);
+            dlg.setVisible(true);
+        }
+ 
+        else if(e.getSource() == jmenuitemExit)
+        {
+            System.out.println("Quitting Calculator window...");
+            System.exit(0);
+        }    
+ 
+        // Search for the button pressed until end of array or key found
+        for (int i=0; i<button.length; i++)
+        {
+            if(e.getSource() == button[i])
+            {
+                switch(i)
+                {
+                    case 0:
+                        addDigit(i);
+                        break;
+ 
+                    case 1:
+                        addDigit(i);
+                        break;
+ 
+                    case 2:
+                        addDigit(i);
+                        break;
+ 
+                    case 3:
+                        addDigit(i);
+                        break;
+ 
+                    case 4:
+                        addDigit(i);
+                        break;
+ 
+                    case 5:
+                        addDigit(i);
+                        break;
+ 
+                    case 6:
+                        addDigit(i);
+                        break;
+ 
+                    case 7:
+                        addDigit(i);
+                        break;
+ 
+                    case 8:
+                        addDigit(i);
+                        break;
+ 
+                    case 9:
+                        addDigit(i);
+                        break;
+ 
+                    case 10:    // +/-
+                        processSignChange();
+                        break;
+ 
+                    case 11:    // decimal point
+                        addDecimalPoint();
+                        break;
+ 
+                    case 12:    // =
+                        processEquals();
+                        break;
+ 
+                    case 13:    // divide
+                        processOperator("/");
+                        break;
+ 
+                    case 14:    // *
+                        processOperator("*");
+                        break;
+ 
+                    case 15:    // -
+                        processOperator("-");
+                        break;
+ 
+                    case 16:    // +
+                        processOperator("+");
+                        break;
+ 
+                    case 17:    // sqrt
+                        if (displayMode != ERROR_MODE)
+                        {
+                            try
+                            {
+                                if (getDisplayString().indexOf("-") == 0)
+                                    displayError("Invalid input for function!");
+ 
+                                result = Math.sqrt(getNumberInDisplay());
+                                displayResult(result);
+                            }
+ 
+                            catch(Exception ex)
+                            {
+                                displayError("Invalid input for function!");
+                                displayMode = ERROR_MODE;
+                            }
+                        }
+                        break;
+ 
+                    case 18:    // 1/x
+                        if (displayMode != ERROR_MODE)
+                        {
+                            try
+                            {
+                                if (getNumberInDisplay() == 0)
+                                    displayError("Cannot divide by zero!");
+ 
+                                result = 1 / getNumberInDisplay();
+                                displayResult(result);
+                            }
+ 
+                            catch(Exception ex)
+                            {
+                                displayError("Cannot divide by zero!");
+                                displayMode = ERROR_MODE;
+                            }
+                        }
+                        break;
+ 
+                    case 19:    // %
+                        if (displayMode != ERROR_MODE)
+                        {
+                            try
+                            {
+                                result = getNumberInDisplay() / 100;
+                                displayResult(result);
+                            }
+ 
+                            catch(Exception ex)
+                            {
+                                displayError("Invalid input for function!");
+                                displayMode = ERROR_MODE;
+                            }
+                        }
+                        break;
+ 
+                    case 20:    // backspace
+                        if (displayMode != ERROR_MODE)
+                        {
+                            setDisplayString(getDisplayString().substring(0,
+                                        getDisplayString().length() - 1));
+ 
+                            if (getDisplayString().length() < 1)
+                                setDisplayString("0");
+                        }
+                        break;
+ 
+                    case 21:    // CE
+                        clearExisting();
+                        break;
+ 
+                    case 22:    // C
+                        clearAll();
+                        break;
+                }
+            }
+        }
+    }
+ 
+    void setDisplayString(String s)
+    {
+        display.setText(s);
+    }
+ 
+    String getDisplayString ()
+    {
+        return display.getText();
+    }
+ 
+    void addDigit(int digit)
+    {
+        if (clearOnNextDigit)
+            setDisplayString("");
+ 
+        String inputString = getDisplayString();
+ 
+        if (inputString.indexOf("0") == 0)
+        {
+            inputString = inputString.substring(1);
+        }
+ 
+        if ((!inputString.equals("0") || digit > 0) && inputString.length() < MAX_INPUT_LENGTH)
+        {
+            setDisplayString(inputString + digit);
+        }
+ 
+ 
+        displayMode = INPUT_MODE;
+        clearOnNextDigit = false;
+    }
+ 
+    void addDecimalPoint()
+    {
+        displayMode = INPUT_MODE;
+ 
+        if (clearOnNextDigit)
+            setDisplayString("");
+ 
+        String inputString = getDisplayString();
+ 
+        // If the input string already contains a decimal point, don't
+        // do anything to it.
+        if (inputString.indexOf(".") < 0)
+            setDisplayString(new String(inputString + "."));
+    }
+ 
+    void processSignChange()
+    {
+        if (displayMode == INPUT_MODE)
+        {
+            String input = getDisplayString();
+ 
+            if (input.length() > 0 && !input.equals("0"))
+            {
+                if (input.indexOf("-") == 0)
+                    setDisplayString(input.substring(1));
+ 
+                else
+                    setDisplayString("-" + input);
+            }
+ 
+        }
+ 
+        else if (displayMode == RESULT_MODE)
+        {
+            double numberInDisplay = getNumberInDisplay();
+ 
+            if (numberInDisplay != 0)
+                displayResult(-numberInDisplay);
+        }
+    }
+ 
+    void clearAll()
+    {
+        setDisplayString("0");
+        lastOperator = "0";
+        lastNumber = 0;
+        displayMode = INPUT_MODE;
+        clearOnNextDigit = true;
+    }
+ 
+    void clearExisting()
+    {
+        setDisplayString("0");
+        clearOnNextDigit = true;
+        displayMode = INPUT_MODE;
+    }
+ 
+    double getNumberInDisplay()
+    {
+        String input = display.getText();
+        return Double.parseDouble(input);
+    }
+ 
+    void processOperator(String op) 
+    {
+        if (displayMode != ERROR_MODE)
+        {
+            double numberInDisplay = getNumberInDisplay();
+ 
+            if (!lastOperator.equals("0"))    
+            {
+                try
+                {
+                    double result = processLastOperator();
+                    displayResult(result);
+                    lastNumber = result;
+                }
+ 
+                catch (DivideByZeroException e)
+                {
+                }
+            }
+ 
+            else
+            {
+                lastNumber = numberInDisplay;
+            }
+ 
+            clearOnNextDigit = true;
+            lastOperator = op;
+        }
+    }
+ 
+    void processEquals()
+    {
+        double result = 0;
+ 
+        if (displayMode != ERROR_MODE)
+        {
+            try            
+            {
+                result = processLastOperator();
+ 
+////                if (result == 0)
+////                    setDisplayString("" + Double.parseDouble(getDisplayString()));
+//                    
+//                if (result == 0)
+// displayResult(result);
+//                
+//                else
+                    displayResult(result);
+            }
+ 
+            catch (DivideByZeroException e)
+            {
+                displayError("Cannot divide by zero!");
+            }
+ 
+            lastOperator = "0";
+        }
+    }
+ 
+    double processLastOperator() throws DivideByZeroException
+    {
+        double result = 0;
+        double numberInDisplay = getNumberInDisplay();
+ 
+        if (lastOperator.equals("/"))
+        {
+            if (numberInDisplay == 0)
+                throw (new DivideByZeroException());
+ 
+            result = lastNumber / numberInDisplay;
+        }
+ 
+        if (lastOperator.equals("*"))
+            result = lastNumber * numberInDisplay;
+ 
+        if (lastOperator.equals("-"))
+            result = lastNumber - numberInDisplay;
+ 
+        if (lastOperator.equals("+"))
+            result = lastNumber + numberInDisplay;
+ 
+        return result;
+    }
+ 
+    void displayResult(double result)
+    {
+        setDisplayString(Double.toString(result));
+        lastNumber = result;
+        displayMode = RESULT_MODE;
+        clearOnNextDigit = true;
+    }
+ 
+    void displayError(String errorMessage)
+    {
+        setDisplayString(errorMessage);
+        lastNumber = 0;
+        displayMode = ERROR_MODE;
+        clearOnNextDigit = true;
+    }
+ 
+    public static void main(String args[]) 
+    {
+		Calculator calci = new Calculator();
+        Container contentPane = calci.getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        calci.setTitle("Calculator");
+        calci.setSize(241, 217);
+        calci.setLocation(400, 250);
+        calci.setVisible(true);
+        calci.setResizable(false);
+
+    }
+ 
+}
+ 
+class DivideByZeroException extends Exception
+{
+    public DivideByZeroException()
+    {
+        super();
+    }
+ 
+    public DivideByZeroException(String s)
+    {
+        super(s);
+    }
+}
+ 
+class CustomDialog extends JDialog implements ActionListener
+{
+    JButton OK;
+ 
+    CustomDialog(JFrame parent, String title, boolean modal)
+    {
+        super(parent, title, modal);
+        setBackground(Color.black);
+ 
+        JPanel p1 = new JPanel(new FlowLayout(FlowLayout.CENTER));
+ 
+ 
+        StringBuffer text = new StringBuffer();
+        text.append("Date:        01/02/09\n");
+        text.append("Version:    1.0");
+ 
+        JTextArea aboutCalc = new JTextArea(5, 21);
+        aboutCalc.setText(text.toString());
+        aboutCalc.setFont(new Font("Times New Roman", 1, 16));
+        aboutCalc.setEditable(false);
+        aboutCalc.setBackground(Color.white);
+ 
+        p1.add(aboutCalc);
+        p1.setBackground(Color.white);
+        add(p1, BorderLayout.CENTER);
+ 
+        JPanel p2 = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        OK = new JButton(" OK ");
+        OK.setFont(new Font("Times New Roman", 1, 14));
+        OK.setBackground(Color.gray);
+        OK.setForeground(Color.blue);
+        OK.addActionListener(this);
+ 
+        p2.add(OK);
+        p2.setBackground(Color.blue);
+        add(p2, BorderLayout.SOUTH);
+ 
+        setLocation(408, 270);
+        setResizable(false);
+ 
+        addWindowListener(new WindowAdapter() 
+            {
+                public void windowClosing(WindowEvent e)
+                {
+                    Window aboutDialog = e.getWindow();
+                    aboutDialog.dispose();
+                }
+            }
+       );
+ 
+        pack();
+    }
+ 
+    public void actionPerformed(ActionEvent e)
+    {
+        if(e.getSource() == OK)
+        {
+            System.out.println("Quitting About Calculator window...");
+            this.dispose();
+        }
+    }
+ 
+}
